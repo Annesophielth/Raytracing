@@ -3,10 +3,9 @@ from PIL import Image
 import numpy as np
 import math
 
-from image_texture import ImageTexture
 
 class Sphere:
-    def __init__(self, rayon, centre, couleur, reflection, texture, transparence):
+    def __init__(self, rayon, centre, couleur, draw):
       """
 
       #==========================================================================================#
@@ -25,11 +24,9 @@ class Sphere:
       self.rayon = rayon
       self.centre = centre
       self.couleur = couleur
-      self.reflection = reflection
-      self.texture = texture if texture else None
-      self.transparence = transparence 
+      self.draw = draw
       
-    def find_intersection(self,pixel_eval,rayon_vue):
+    def find_intersection(self, rayon_vue, pixel_eval):
       """
       
       P -  <=> t²*B*B - 2*t*B * (C - Q) + (C - Q) * (C - Q) - r² = 0
@@ -70,12 +67,6 @@ class Sphere:
       if delta < 0:
          return None
       
-      elif delta == 0:
-        if a == 0:
-            return None
-        else:
-          return -b/(2*a)
-      
       else:
         t1 = (-b + math.sqrt(delta)) / (2 * a)
         t2 = (-b - math.sqrt(delta)) / (2 * a)
@@ -89,40 +80,16 @@ class Sphere:
             return pixel_eval + t2 * rayon_vue
         else:
             return None
-    """
+
     def draw_sphere(self, intersections):
         for (x, y), _ in intersections.items():
             self.draw.point((x, y), fill=self.couleur)
-    """
-    def get_couleur(self):
+    
+    def get_color(self):
        # Retourne la couleur de la sphère
-       return self.couleur
+       return self.color
     
     def get_normal(self, hit_point):
-        return (hit_point - self.centre)/np.linalg.norm(hit_point - self.centre)
-    
-    def get_couleur(self, hit_point):
-        if self.texture:
-            #conversion du point d'impact en coordonnées UV de la sphère
-            u, v = self.get_sphere_uv((hit_point - self.centre) / self.rayon)
-            return self.texture.valeur(u, v)
-        return self.couleur
-    
-    def get_uv(self, p):
-      """
-      Retourne la position du point p sur la texture
-      Pour plus d'explication voir dans le fichier:
-        image_texture.py dans le init l'explication de ce qu'il se passe ici
-      """
-
-      y = max(-1.0, min(1.0, -p[1]))  #valeurs entre [0, 1]
-      theta = math.acos(y)
-      phi = math.atan2(-p[2], p[0]) + math.pi
-
-      #normalisation de u et v pour les avoir dans l'intervale [0, 1]
-      u = phi / (2 * math.pi)
-      v = theta / math.pi
-
-      return u, v
+        return np.linalg.norm(hit_point - self.centre)
     
     
